@@ -4,9 +4,13 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { parseEnvOrigins } from './utils/parse-env-origins';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
-const getCorsAllowList = () => {
-  return parseEnvOrigins(process.env.CLIENT_URL, process.env.CORS_OTHER_URL);
+const getCorsAllowList = (config: ConfigService) => {
+  return parseEnvOrigins(
+    config.get<string>('CLIENT_URL'),
+    config.get<string>('CORS_OTHER_URL'),
+  );
 };
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,8 +18,10 @@ async function bootstrap() {
   //Cookie parser
   app.use(cookieParser());
 
+  const config = app.get(ConfigService);
+
   //CORS
-  const allowList = getCorsAllowList();
+  const allowList = getCorsAllowList(config);
   app.enableCors({
     origin: (requestOrigin: string, callback) => {
       if (!requestOrigin) {
@@ -57,7 +63,7 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  await app.listen(process.env.PORT ?? 8080);
+  await app.listen(config.get<number>('PORT') ?? 8080);
 }
 bootstrap().catch((error) => {
   console.error('Failed to start app: ', error);
