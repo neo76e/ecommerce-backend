@@ -16,4 +16,3 @@ export class CorrelationIdMiddleware implements NestMiddleware {
     next();
   }
 }
-export { CORRELATION_ID_HEADER };
